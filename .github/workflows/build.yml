@@ -1,4 +1,4 @@
-name: Build v2ray-core
+name: Build and Release v2ray-core
 
 on:
   push:
@@ -42,3 +42,47 @@ jobs:
           v2ray-linux-amd64
           v2ray-darwin-amd64
           v2ray-windows-amd64.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Git
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v2.0.0
+        release_name: Release v2.0.0
+        body: |
+          Release v2.0.0
+          - Add support for multiple platforms
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Artifacts
+      id: upload_release_artifacts
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: |
+          ./v2ray-linux-amd64
+          ./v2ray-darwin-amd64
+          ./v2ray-windows-amd64.exe
+        asset_name: |
+          v2ray-linux-amd64
+          v2ray-darwin-amd64
+          v2ray-windows-amd64.exe
+        asset_content_type: application/octet-stream
