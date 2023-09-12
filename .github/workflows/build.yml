@@ -1,0 +1,44 @@
+name: Build v2ray-core
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Install dependencies
+      run: |
+        go mod download
+
+    - name: Build for Linux
+      run: |
+        env GOOS=linux GOARCH=amd64 go build -o v2ray-linux-amd64 ./main
+
+    - name: Build for macOS
+      run: |
+        env GOOS=darwin GOARCH=amd64 go build -o v2ray-darwin-amd64 ./main
+
+    - name: Build for Windows
+      run: |
+        env GOOS=windows GOARCH=amd64 go build -o v2ray-windows-amd64.exe ./main
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: v2ray-binaries
+        path: |
+          v2ray-linux-amd64
+          v2ray-darwin-amd64
+          v2ray-windows-amd64.exe
